@@ -316,10 +316,10 @@ angular.module('hierarchical-selector', [
 	  if ($scope.selection) {
 			if (angular.isArray($scope.selection)) {
 				for (var i = 0; i < $scope.selection.length; i++) {
-					$scope.itemSelected(angular.copy($scope.selection[i]));
+					$scope.itemSelected($scope.selection[i]);
 				}
 			} else {
-				$scope.itemSelected(angular.copy($scope.selection));
+				$scope.itemSelected($scope.selection);
 			}
 	  } else {
 		  $scope.clearSelection();
