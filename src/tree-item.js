@@ -26,7 +26,6 @@ angular.module('hierarchical-selector.tree-item', [
     controller: function($scope) {
       $scope.metaData = selectorUtils.getMetaData($scope.item);
       $scope.metaData.isExpanded = false;
-	  $scope.metaData.isActive = false;
 
       $scope.theChildren = $scope.item.children;
 
