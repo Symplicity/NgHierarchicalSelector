@@ -56,9 +56,9 @@ angular.module('hierarchical-selector', [
       }
 
       if (scope.syncData) {
-        scope.data = scope.syncData;
+        scope.data = angular.copy(scope.syncData);
         scope.$watch('syncData', function() {
-          scope.data = scope.syncData;
+          scope.data = angular.copy(scope.syncData);
         });
       }
     },
