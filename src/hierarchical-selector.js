@@ -336,6 +336,8 @@ angular.module('hierarchical-selector', [
                                 for (var i = 0; i < newValue.length; i++) {
                                     $scope.itemSelected(angular.copy(newValue[i]));
                                 }
+                            } else {
+                                $scope.clearSelection();
                             }
                         } else {
                             $scope.selectedItems = [];
