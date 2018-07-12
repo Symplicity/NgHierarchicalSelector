@@ -62,7 +62,7 @@ angular.module('hierarchical-selector', [
                     });
                 }
             },
-            controller: ['$scope', '$document', '$window', '$interpolate', function ($scope, $document, $window, $interpolate) {
+            controller: ['$scope', '$document', '$rootScope', function ($scope, $document, $rootScope) {
                 var activeItem;
 
                 $scope.showTree = false;
@@ -312,10 +312,10 @@ angular.module('hierarchical-selector', [
                 };
 
                 $scope.clearSelection = function () {
-                    $scope.selectedItems = [];
-                    if ($scope.onSelectionChanged) {
-                        $scope.onSelectionChanged({items: undefined});
+                    for (var i = 0; i < $scope.selectedItems.length; i++) {
+                        selectorUtils.getMetaData($scope.selectedItems[i]).selected = false;
                     }
+                    $scope.selectedItems = [];
                 };
 
                 if ($scope.selection) {
@@ -328,23 +328,18 @@ angular.module('hierarchical-selector', [
                     }
                 }
 
-                $scope.$watch('selection', function (newValue, oldValue) {
-                    if (!angular.equals(newValue, oldValue) && newValue) {
-                        if (angular.isArray(newValue)) {
-                            if (newValue.length) {
-                                $scope.selectedItems = [];
-                                for (var i = 0; i < newValue.length; i++) {
-                                    $scope.itemSelected(angular.copy(newValue[i]));
-                                }
-                            } else {
-                                $scope.clearSelection();
-                            }
-                        } else {
-                            $scope.selectedItems = [];
-                            $scope.itemSelected(angular.copy(newValue));
+                $rootScope.$on('ng-hierarchical-selector:selection-updated', function (event, selections) {
+                    $scope.clearSelection();
+                    if (angular.isArray(selections)) {
+                        for (var i = 0; i < selections.length; i++) {
+                            var meta = selectorUtils.getMetaData(selections[i]);
+                            meta.selected = true;
+                            $scope.selectedItems.push(selections[i]);
                         }
-                    } else if (angular.isUndefined(newValue)) { // only clear if it is changing/don't trigger a onSelectionChanged
-                        $scope.clearSelection();
+                    } else {
+                        var meta = selectorUtils.getMetaData(selections);
+                        meta.selected = true;
+                        $scope.selectedItems.push(selections);
                     }
                 });
 

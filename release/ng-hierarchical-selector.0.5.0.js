@@ -281,7 +281,7 @@ angular.module('hierarchical-selector', [
                     }
                 };
 
-                $scope.itemSelected = function (item) {
+                $scope.itemSelected = function (item, silent) {
                     if (($scope.useCanSelectItemCallback && $scope.canSelectItem({item: item}) === false) || ($scope.selectOnlyLeafs && selectorUtils.hasChildren(item, $scope.isAsync))) {
                         return;
                     }
@@ -306,14 +306,17 @@ angular.module('hierarchical-selector', [
                         }
                     }
 
-                    if ($scope.onSelectionChanged) {
+                    if ($scope.onSelectionChanged && !silent) {
                         $scope.onSelectionChanged({items: $scope.selectedItems.length ? $scope.selectedItems : undefined});
                     }
                 };
 
-                $scope.clearSelection = function () {
+                $scope.clearSelection = function (silent) {
+                    for (var i = 0; i < $scope.selectedItems.length; i++) {
+                        selectorUtils.getMetaData($scope.selectedItems[i]).selected = false;
+                    }
                     $scope.selectedItems = [];
-                    if ($scope.onSelectionChanged) {
+                    if ($scope.onSelectionChanged && !silent) {
                         $scope.onSelectionChanged({items: undefined});
                     }
                 };
@@ -321,10 +324,10 @@ angular.module('hierarchical-selector', [
                 if ($scope.selection) {
                     if (angular.isArray($scope.selection)) {
                         for (var i = 0; i < $scope.selection.length; i++) {
-                            $scope.itemSelected($scope.selection[i]);
+                            $scope.itemSelected($scope.selection[i], true);
                         }
                     } else {
-                        $scope.itemSelected($scope.selection);
+                        $scope.itemSelected($scope.selection, true);
                     }
                 }
 
@@ -332,19 +335,19 @@ angular.module('hierarchical-selector', [
                     if (!angular.equals(newValue, oldValue) && newValue) {
                         if (angular.isArray(newValue)) {
                             if (newValue.length) {
-                                $scope.selectedItems = [];
+                                $scope.clearSelection(true);
                                 for (var i = 0; i < newValue.length; i++) {
-                                    $scope.itemSelected(angular.copy(newValue[i]));
+                                    $scope.itemSelected(angular.copy(newValue[i]), true);
                                 }
                             } else {
-                                $scope.clearSelection();
+                                $scope.clearSelection(true);
                             }
                         } else {
                             $scope.selectedItems = [];
-                            $scope.itemSelected(angular.copy(newValue));
+                            $scope.itemSelected(angular.copy(newValue), true);
                         }
                     } else if (angular.isUndefined(newValue)) { // only clear if it is changing/don't trigger a onSelectionChanged
-                        $scope.clearSelection();
+                        $scope.clearSelection(true);
                     }
                 });
 
