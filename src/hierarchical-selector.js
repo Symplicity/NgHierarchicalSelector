@@ -331,12 +331,11 @@ angular.module('hierarchical-selector', [
                 $scope.$watch('selection', function (newValue, oldValue) {
                     if (!angular.equals(newValue, oldValue) && newValue) {
                         if (angular.isArray(newValue)) {
+                            $scope.clearSelection();
                             if (newValue.length) {
                                 for (var i = 0; i < newValue.length; i++) {
                                     $scope.itemSelected(angular.copy(newValue[i]));
                                 }
-                            } else {
-                                $scope.clearSelection();
                             }
                         } else {
                             $scope.itemSelected(angular.copy(newValue));
