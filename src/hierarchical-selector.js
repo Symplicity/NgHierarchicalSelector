@@ -330,14 +330,15 @@ angular.module('hierarchical-selector', [
 
                 $rootScope.$on('ng-hierarchical-selector:selection-updated', function (event, selections) {
                     $scope.clearSelection();
+                    var meta;
                     if (angular.isArray(selections)) {
                         for (var i = 0; i < selections.length; i++) {
-                            var meta = selectorUtils.getMetaData(selections[i]);
+                            meta = selectorUtils.getMetaData(selections[i]);
                             meta.selected = true;
                             $scope.selectedItems.push(selections[i]);
                         }
                     } else {
-                        var meta = selectorUtils.getMetaData(selections);
+                        meta = selectorUtils.getMetaData(selections);
                         meta.selected = true;
                         $scope.selectedItems.push(selections);
                     }

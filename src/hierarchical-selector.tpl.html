@@ -1,10 +1,10 @@
 <div class="hierarchical-control">
   <div class="control-group">
     <button type="button" ng-if="showButton" class="pull-down" ng-click="onButtonClicked($event)"><div class="arrow-down"></div></button>
-    <div class="hierarchical-input form-control" ng-class="{'with-btn': showButton}" ng-click="onControlClicked($event)">
+    <div class="hierarchical-input form-control" ng-class="{'with-btn': showButton}" tabindex="0" role="button" ng-keyup="$event.keyCode == 13 ? onControlClicked($event) : null" ng-click="onControlClicked($event)">
       <span ng-if="selectedItems.length == 0" class="placeholder">{{placeholder}}</span>
       <span ng-if="selectedItems.length > 0" class="selected-items">
-        <span ng-repeat="i in selectedItems" class="selected-item">{{getTagName(i)}} <span class="selected-item-close" ng-click="deselectItem(i, $event)"></span></span>
+        <span ng-repeat="i in selectedItems" class="selected-item" tabindex="0" role="button" ng-keyup="$event.keyCode == 13 ? deselectItem(i, $event) : null">{{getTagName(i)}} <span class="selected-item-close" ng-click="deselectItem(i, $event)"></span></span>
       </span>
       <!-- <input type="text" class="blend-in" /> -->
     </div>

@@ -62,7 +62,7 @@ angular.module('hierarchical-selector', [
                     });
                 }
             },
-            controller: ['$scope', '$document', '$window', '$interpolate', function ($scope, $document, $window, $interpolate) {
+            controller: ['$scope', '$document', '$rootScope', function ($scope, $document, $rootScope) {
                 var activeItem;
 
                 $scope.showTree = false;
@@ -281,7 +281,7 @@ angular.module('hierarchical-selector', [
                     }
                 };
 
-                $scope.itemSelected = function (item, silent) {
+                $scope.itemSelected = function (item) {
                     if (($scope.useCanSelectItemCallback && $scope.canSelectItem({item: item}) === false) || ($scope.selectOnlyLeafs && selectorUtils.hasChildren(item, $scope.isAsync))) {
                         return;
                     }
@@ -306,48 +306,41 @@ angular.module('hierarchical-selector', [
                         }
                     }
 
-                    if ($scope.onSelectionChanged && !silent) {
+                    if ($scope.onSelectionChanged) {
                         $scope.onSelectionChanged({items: $scope.selectedItems.length ? $scope.selectedItems : undefined});
                     }
                 };
 
-                $scope.clearSelection = function (silent) {
+                $scope.clearSelection = function () {
                     for (var i = 0; i < $scope.selectedItems.length; i++) {
                         selectorUtils.getMetaData($scope.selectedItems[i]).selected = false;
                     }
                     $scope.selectedItems = [];
-                    if ($scope.onSelectionChanged && !silent) {
-                        $scope.onSelectionChanged({items: undefined});
-                    }
                 };
 
                 if ($scope.selection) {
                     if (angular.isArray($scope.selection)) {
                         for (var i = 0; i < $scope.selection.length; i++) {
-                            $scope.itemSelected($scope.selection[i], true);
+                            $scope.itemSelected($scope.selection[i]);
                         }
                     } else {
-                        $scope.itemSelected($scope.selection, true);
+                        $scope.itemSelected($scope.selection);
                     }
                 }
 
-                $scope.$watch('selection', function (newValue, oldValue) {
-                    if (!angular.equals(newValue, oldValue) && newValue) {
-                        if (angular.isArray(newValue)) {
-                            if (newValue.length) {
-                                $scope.clearSelection(true);
-                                for (var i = 0; i < newValue.length; i++) {
-                                    $scope.itemSelected(angular.copy(newValue[i]), true);
-                                }
-                            } else {
-                                $scope.clearSelection(true);
-                            }
-                        } else {
-                            $scope.selectedItems = [];
-                            $scope.itemSelected(angular.copy(newValue), true);
+                $rootScope.$on('ng-hierarchical-selector:selection-updated', function (event, selections) {
+                    $scope.clearSelection();
+                    var meta;
+                    if (angular.isArray(selections)) {
+                        for (var i = 0; i < selections.length; i++) {
+                            meta = selectorUtils.getMetaData(selections[i]);
+                            meta.selected = true;
+                            $scope.selectedItems.push(selections[i]);
                         }
-                    } else if (angular.isUndefined(newValue)) { // only clear if it is changing/don't trigger a onSelectionChanged
-                        $scope.clearSelection(true);
+                    } else {
+                        meta = selectorUtils.getMetaData(selections);
+                        meta.selected = true;
+                        $scope.selectedItems.push(selections);
                     }
                 });
 
@@ -542,5 +535,5 @@ angular.module('hierarchical-selector.tree-item', [
 }])
 ;
 
-angular.module("hierarchical-selector").run(["$templateCache", function($templateCache) {$templateCache.put("hierarchical-selector.tpl.html","<div class=\"hierarchical-control\">\r\n  <div class=\"control-group\">\r\n    <button type=\"button\" ng-if=\"showButton\" class=\"pull-down\" ng-click=\"onButtonClicked($event)\"><div class=\"arrow-down\"></div></button>\r\n    <div class=\"hierarchical-input form-control\" ng-class=\"{\'with-btn\': showButton}\" ng-click=\"onControlClicked($event)\">\r\n      <span ng-if=\"selectedItems.length == 0\" class=\"placeholder\">{{placeholder}}</span>\r\n      <span ng-if=\"selectedItems.length > 0\" class=\"selected-items\">\r\n        <span ng-repeat=\"i in selectedItems\" class=\"selected-item\">{{getTagName(i)}} <span class=\"selected-item-close\" ng-click=\"deselectItem(i, $event)\"></span></span>\r\n      </span>\r\n      <!-- <input type=\"text\" class=\"blend-in\" /> -->\r\n    </div>\r\n  </div>\r\n  <div class=\"tree-view-outer\" ng-show=\"showTree\">\r\n    <div class=\"tree-view\" ng-show=\"showTree\">\r\n      <ul>\r\n        <tree-item class=\"top-level\" ng-repeat=\"item in data\" item=\"item\" select-only-leafs=\"selectOnlyLeafs\" use-can-select-item=\"useCanSelectItemCallback\" can-select-item=\"canSelectItem\" multi-select=\"multiSelect\" item-selected=\"itemSelected(item)\" on-active-item=\"onActiveItem(item)\" load-child-items=\"loadChildItems\" async=\"isAsync\" item-has-children=\"hasChildren(parent)\" async-child-cache=\"asyncChildCache\" />\r\n      </ul>\r\n    </div>\r\n  </div>\r\n</div>\r\n");
+angular.module("hierarchical-selector").run(["$templateCache", function($templateCache) {$templateCache.put("hierarchical-selector.tpl.html","<div class=\"hierarchical-control\">\r\n  <div class=\"control-group\">\r\n    <button type=\"button\" ng-if=\"showButton\" class=\"pull-down\" ng-click=\"onButtonClicked($event)\"><div class=\"arrow-down\"></div></button>\r\n    <div class=\"hierarchical-input form-control\" ng-class=\"{\'with-btn\': showButton}\" tabindex=\"0\" role=\"button\" ng-keyup=\"$event.keyCode == 13 ? onControlClicked($event) : null\" ng-click=\"onControlClicked($event)\">\r\n      <span ng-if=\"selectedItems.length == 0\" class=\"placeholder\">{{placeholder}}</span>\r\n      <span ng-if=\"selectedItems.length > 0\" class=\"selected-items\">\r\n        <span ng-repeat=\"i in selectedItems\" class=\"selected-item\" tabindex=\"0\" role=\"button\" ng-keyup=\"$event.keyCode == 13 ? deselectItem(i, $event) : null\">{{getTagName(i)}} <span class=\"selected-item-close\" ng-click=\"deselectItem(i, $event)\"></span></span>\r\n      </span>\r\n      <!-- <input type=\"text\" class=\"blend-in\" /> -->\r\n    </div>\r\n  </div>\r\n  <div class=\"tree-view-outer\" ng-show=\"showTree\">\r\n    <div class=\"tree-view\" ng-show=\"showTree\">\r\n      <ul>\r\n        <tree-item class=\"top-level\" ng-repeat=\"item in data\" item=\"item\" select-only-leafs=\"selectOnlyLeafs\" use-can-select-item=\"useCanSelectItemCallback\" can-select-item=\"canSelectItem\" multi-select=\"multiSelect\" item-selected=\"itemSelected(item)\" on-active-item=\"onActiveItem(item)\" load-child-items=\"loadChildItems\" async=\"isAsync\" item-has-children=\"hasChildren(parent)\" async-child-cache=\"asyncChildCache\" />\r\n      </ul>\r\n    </div>\r\n  </div>\r\n</div>\r\n");
 $templateCache.put("tree-item.tpl.html","<li>\r\n  <div class=\"item-container\" ng-class=\"{active: metaData.isActive, selected: metaData.selected}\" ng-mouseover=\"onMouseOver($event)\" ng-click=\"clickSelectItem(item, $event)\">\r\n    <span ng-if=\"showExpando(item)\" class=\"expando\" ng-class=\"{\'expando-opened\': metaData.isExpanded}\" ng-click=\"onExpandoClicked(item, $event)\"></span><div class=\"item-details\"><input class=\"tree-checkbox\" type=\"checkbox\" ng-if=\"showCheckbox()\" ng-checked=\"metaData.selected\" />{{item.name}}</div>\r\n  </div>\r\n  <ul ng-repeat=\"child in theChildren\" ng-if=\"metaData.isExpanded\">\r\n    <div ng-if=\"child.placeholder\" class=\"loading\">Loading...</div>\r\n    <tree-item ng-if=\"!child.placeholder\" item=\"child\" item-selected=\"subItemSelected(item)\" select-only-leafs=\"selectOnlyLeafs\" use-can-select-item=\"useCanSelectItem\" can-select-item=\"canSelectItem\" multi-select=\"multiSelect\" on-active-item=\"activeSubItem(item, $event)\" load-child-items=\"loadChildItems\" async=\"async\" async-child-cache=\"asyncChildCache\" />\r\n  </ul>\r\n</li>\r\n");}]);
