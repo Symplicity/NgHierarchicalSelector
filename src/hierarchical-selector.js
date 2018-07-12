@@ -331,13 +331,14 @@ angular.module('hierarchical-selector', [
                 $scope.$watch('selection', function (newValue, oldValue) {
                     if (!angular.equals(newValue, oldValue) && newValue) {
                         if (angular.isArray(newValue)) {
-                            $scope.clearSelection();
                             if (newValue.length) {
+                                $scope.selectedItems = [];
                                 for (var i = 0; i < newValue.length; i++) {
                                     $scope.itemSelected(angular.copy(newValue[i]));
                                 }
                             }
                         } else {
+                            $scope.selectedItems = [];
                             $scope.itemSelected(angular.copy(newValue));
                         }
                     } else if (angular.isUndefined(newValue)) { // only clear if it is changing/don't trigger a onSelectionChanged
