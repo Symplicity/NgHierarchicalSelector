@@ -40,6 +40,10 @@ angular.module('hierarchical-selector', [
                     scope.useTagName = true;
                 }
 
+                if (attrs.name) {
+                    scope.inputName = attrs.name;
+                }
+
                 // init async
                 // if we have no data and have the callback
                 if (!scope.syncData && scope.isAsync) {
@@ -328,20 +332,23 @@ angular.module('hierarchical-selector', [
                     }
                 }
 
-                $rootScope.$on('ng-hierarchical-selector:selection-updated', function (event, selections) {
-                    $scope.clearSelection();
-                    var meta;
-                    if (angular.isArray(selections)) {
-                        for (var i = 0; i < selections.length; i++) {
-                            meta = selectorUtils.getMetaData(selections[i]);
+                $rootScope.$on('ng-hierarchical-selector:selection-updated', function (event, selections, name) {
+                    if ($scope.name === name) {
+                        $scope.clearSelection();
+                        var meta;
+                        if (angular.isArray(selections)) {
+                            for (var i = 0; i < selections.length; i++) {
+                                meta = selectorUtils.getMetaData(selections[i]);
+                                meta.selected = true;
+                                $scope.selectedItems.push(selections[i]);
+                            }
+                        } else {
+                            meta = selectorUtils.getMetaData(selections);
                             meta.selected = true;
-                            $scope.selectedItems.push(selections[i]);
+                            $scope.selectedItems.push(selections);
                         }
-                    } else {
-                        meta = selectorUtils.getMetaData(selections);
-                        meta.selected = true;
-                        $scope.selectedItems.push(selections);
                     }
+
                 });
 
                 $scope.getTagName = function (i) {
