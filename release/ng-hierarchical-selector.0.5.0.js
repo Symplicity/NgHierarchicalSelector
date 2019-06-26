@@ -333,7 +333,7 @@ angular.module('hierarchical-selector', [
                 }
 
                 $rootScope.$on('ng-hierarchical-selector:selection-updated', function (event, selections, name) {
-                    if ($scope.name === name) {
+                    if ($scope.inputName === name) {
                         $scope.clearSelection();
                         var meta;
                         if (angular.isArray(selections)) {
